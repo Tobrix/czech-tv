@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>TV</title>
+<meta name="description" content="Sledujte živou televizi odkudkoliv.">
+
+<!-- iOS / PWA meta -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TV">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- App shell -->
+<div id="app">
+
+  <!-- Sidebar (iPad / desktop) -->
+  <nav id="sidebar" aria-label="Kategorie">
+    <div class="sidebar-brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+      </span>
+      <span class="brand-name">TV</span>
+    </div>
+
+    <div class="sidebar-search">
+      <svg viewBox="0 0 24 24" width="16" height="16" class="search-icon" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5 6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 5L21 19l-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+      <input id="searchInput" type="search" placeholder="Hledat kanál" autocomplete="off" spellcheck="false">
+    </div>
+
+    <ul class="sidebar-list" id="sidebarList">
+      <li><button class="sidebar-item active" data-group="__all">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 5h16v2H4zm0 6h16v2H4zm0 6h16v2H4z"/></svg>
+        <span>Vše</span>
+      </button></li>
+      <li><button class="sidebar-item" data-group="__favorites">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 21s-6.7-4.35-9.3-8.2C.8 9.9 1.9 6.4 5 5.3c1.9-.68 3.9.02 5 1.6 1.1-1.58 3.1-2.28 5-1.6 3.1 1.1 4.2 4.6 2.3 7.5C18.7 16.65 12 21 12 21z"/></svg>
+        <span>Oblíbené</span>
+      </button></li>
+    </ul>
+
+    <div class="sidebar-divider"></div>
+
+    <ul class="sidebar-list" id="sidebarGroups"></ul>
+  </nav>
+
+  <!-- Top bar (iPhone) -->
+  <header id="topbar">
+    <div class="topbar-title" id="topbarTitle">Vše</div>
+    <button id="topbarSearchBtn" aria-label="Hledat">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5 6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 5L21 19l-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+    </button>
+  </header>
+
+  <div id="topbarSearchBar" class="hidden">
+    <svg viewBox="0 0 24 24" width="16" height="16" class="search-icon" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5 6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 5L21 19l-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+    <input id="searchInputMobile" type="search" placeholder="Hledat kanál" autocomplete="off" spellcheck="false">
+    <button id="topbarSearchClose">Zrušit</button>
+  </div>
+
+  <!-- Mobile tab bar -->
+  <nav id="tabbar" aria-label="Navigace">
+    <button class="tab-item active" data-group="__all">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M4 5h16v2H4zm0 6h16v2H4zm0 6h16v2H4z"/></svg>
+      <span>Vše</span>
+    </button>
+    <button class="tab-item" data-group="__favorites">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 21s-6.7-4.35-9.3-8.2C.8 9.9 1.9 6.4 5 5.3c1.9-.68 3.9.02 5 1.6 1.1-1.58 3.1-2.28 5-1.6 3.1 1.1 4.2 4.6 2.3 7.5C18.7 16.65 12 21 12 21z"/></svg>
+      <span>Oblíbené</span>
+    </button>
+    <button class="tab-item" data-group="__categories">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm9 0h7v7h-7z"/></svg>
+      <span>Kategorie</span>
+    </button>
+  </nav>
+
+  <!-- Main content -->
+  <main id="content">
+    <div id="continueRow" class="shelf hidden">
+      <h2 class="shelf-title">Naposledy sledováno</h2>
+      <div class="shelf-scroll" id="continueScroll"></div>
+    </div>
+    <div id="channelSections"></div>
+    <div id="emptyState" class="empty-state hidden">
+      <svg viewBox="0 0 24 24" width="40" height="40"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5 6.47 6.47 0 0 0 4.23-1.57l.27.28v.79l5 5L21 19l-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg>
+      <p id="emptyStateText">Nic jsme nenašli</p>
+    </div>
+  </main>
+
+  <!-- Category sheet (mobile) -->
+  <div id="categorySheet" class="sheet hidden">
+    <div class="sheet-backdrop"></div>
+    <div class="sheet-panel">
+      <div class="sheet-handle"></div>
+      <h3>Kategorie</h3>
+      <ul id="categorySheetList" class="sheet-list"></ul>
+    </div>
+  </div>
+
+  <!-- Mini player -->
+  <button id="miniPlayer" class="hidden" aria-label="Otevřít přehrávač">
+    <img id="miniLogo" alt="">
+    <div class="mini-info">
+      <div id="miniName">—</div>
+      <div id="miniGroup">—</div>
+    </div>
+    <span class="mini-live-dot"></span>
+    <span class="mini-live">ŽIVĚ</span>
+    <svg class="mini-expand" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M7 14l5 5 5-5H7zm10-4l-5-5-5 5h10z"/></svg>
+  </button>
+
+  <!-- Full player -->
+  <div id="player" class="hidden">
+    <div class="player-video-wrap">
+      <video id="video" playsinline webkit-playsinline></video>
+      <div id="playerLoading" class="player-loading hidden">
+        <div class="spinner"></div>
+      </div>
+      <div id="playerError" class="player-error hidden">
+        <svg viewBox="0 0 24 24" width="34" height="34"><path fill="currentColor" d="M12 2 1 21h22L12 2zm0 15.5a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zM11 10h2v4h-2z"/></svg>
+        <p>Kanál se nepodařilo načíst.</p>
+        <button id="playerRetry">Zkusit znovu</button>
+      </div>
+    </div>
+
+    <div class="player-chrome">
+      <button id="playerClose" aria-label="Zavřít">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M7 10l5 5 5-5z" transform="rotate(180 12 12)"/></svg>
+        <span>Zpět</span>
+      </button>
+
+      <div class="player-meta">
+        <img id="playerLogo" alt="">
+        <div>
+          <div id="playerName" class="player-name">—</div>
+          <div id="playerGroup" class="player-group">—</div>
+        </div>
+      </div>
+
+      <div class="player-actions">
+        <button id="playerFav" aria-label="Přidat do oblíbených">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 21s-6.7-4.35-9.3-8.2C.8 9.9 1.9 6.4 5 5.3c1.9-.68 3.9.02 5 1.6 1.1-1.58 3.1-2.28 5-1.6 3.1 1.1 4.2 4.6 2.3 7.5C18.7 16.65 12 21 12 21z"/></svg>
+        </button>
+        <button id="playerMute" aria-label="Ztlumit">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 10v4h4l5 5V5L7 10H3zm13.5 2A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        </button>
+        <button id="playerFullscreen" aria-label="Celá obrazovka">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="player-channels">
+      <div class="player-channels-scroll" id="playerChannelsScroll"></div>
+    </div>
+  </div>
+
+</div>
+
+<template id="channelCardTpl">
+  <button class="channel-card">
+    <div class="channel-art">
+      <img class="channel-logo" alt="" loading="lazy">
+      <span class="fav-dot"></span>
+    </div>
+    <div class="channel-name"></div>
+    <div class="channel-group"></div>
+  </button>
+</template>
+
+<template id="continueCardTpl">
+  <button class="continue-card">
+    <img class="continue-logo" alt="" loading="lazy">
+    <div class="continue-live">ŽIVĚ</div>
+    <div class="continue-name"></div>
+  </button>
+</template>
+
+<template id="playerChipTpl">
+  <button class="player-chip">
+    <img alt="" loading="lazy">
+    <span></span>
+  </button>
+</template>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"></script>
+<script src="channels.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
