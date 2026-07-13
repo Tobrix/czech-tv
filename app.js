@@ -37,7 +37,7 @@ const channelById = Object.fromEntries(CHANNELS.map(c => [c.id, c]));
 // Necháš-li to prázdné (""), appka zkusí kanály volat přímo (funguje jen
 // pro https kanály bez vlastního User-Agentu).
 // ==========================================================================
-const PROXY_BASE = "";
+const PROXY_BASE = "https://oneprimetv.tobias-kubanek.workers.dev";
 
 function isMixedContentRisk(url) {
   return location.protocol === "https:" && /^http:\/\//i.test(url);
