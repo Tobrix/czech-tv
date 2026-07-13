@@ -27,6 +27,12 @@ function saveJSON(key, value) {
 
 const channelById = Object.fromEntries(CHANNELS.map(c => [c.id, c]));
 
+// A channel is at risk of being blocked by the browser's mixed-content policy
+// when this app is served over https but the stream itself is plain http.
+function isMixedContentRisk(url) {
+  return location.protocol === "https:" && /^http:\/\//i.test(url);
+}
+
 // ==========================================================================
 // DOM refs
 // ==========================================================================
@@ -121,6 +127,9 @@ function buildChannelCard(channel) {
   node.querySelector(".channel-group").textContent = groupLabel(channel.group);
   const favDot = node.querySelector(".fav-dot");
   if (state.favorites.includes(channel.id)) favDot.classList.add("on");
+  if (isMixedContentRisk(channel.url)) {
+    node.querySelector(".insecure-badge").classList.remove("hidden");
+  }
   node.addEventListener("click", () => openPlayer(channel.id));
   return node;
 }
@@ -343,12 +352,45 @@ function fullyClosePlayer() {
   document.body.style.overflow = "";
 }
 
+function showPlayerError(message, { offerCopy = false, url = "", offerRetry = true } = {}) {
+  playerLoading.classList.add("hidden");
+  el("playerErrorText").textContent = message;
+  const copyBtn = el("playerCopyUrl");
+  const retryBtn = el("playerRetry");
+  retryBtn.classList.toggle("hidden", !offerRetry);
+  if (offerCopy) {
+    copyBtn.classList.remove("hidden");
+    copyBtn.onclick = () => {
+      navigator.clipboard?.writeText(url).then(() => {
+        copyBtn.textContent = "Zkopírováno";
+        setTimeout(() => { copyBtn.textContent = "Zkopírovat adresu streamu"; }, 1500);
+      }).catch(() => {});
+    };
+  } else {
+    copyBtn.classList.add("hidden");
+  }
+  playerError.classList.remove("hidden");
+}
+
 function loadStream(channel) {
   stopPlayback();
   playerError.classList.add("hidden");
-  playerLoading.classList.remove("hidden");
+  el("playerCopyUrl").classList.add("hidden");
 
   const url = channel.url;
+
+  // Browsers block http:// streams on an https:// page (mixed content) —
+  // this fails silently at the network layer, so we catch it up front
+  // instead of showing a generic "couldn't load" message.
+  if (isMixedContentRisk(url)) {
+    showPlayerError(
+      "Tento kanál používá nezabezpečené (http) spojení, které prohlížeč na zabezpečené (https) stránce blokuje. Zkopíruj si adresu streamu a přehraj ji např. ve VLC, nebo appku hostuj přes http.",
+      { offerCopy: true, url, offerRetry: false }
+    );
+    return;
+  }
+
+  playerLoading.classList.remove("hidden");
   const useNativeHls = videoEl.canPlayType("application/vnd.apple.mpegurl");
 
   const onReady = () => {
@@ -356,8 +398,7 @@ function loadStream(channel) {
     videoEl.play().catch(() => {});
   };
   const onError = () => {
-    playerLoading.classList.add("hidden");
-    playerError.classList.remove("hidden");
+    showPlayerError("Kanál se nepodařilo načíst. Zdroj může být dočasně nedostupný.", { offerCopy: true, url });
   };
 
   if (useNativeHls) {

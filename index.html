@@ -130,8 +130,11 @@
       </div>
       <div id="playerError" class="player-error hidden">
         <svg viewBox="0 0 24 24" width="34" height="34"><path fill="currentColor" d="M12 2 1 21h22L12 2zm0 15.5a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zM11 10h2v4h-2z"/></svg>
-        <p>Kanál se nepodařilo načíst.</p>
-        <button id="playerRetry">Zkusit znovu</button>
+        <p id="playerErrorText">Kanál se nepodařilo načíst.</p>
+        <div class="player-error-actions">
+          <button id="playerRetry">Zkusit znovu</button>
+          <button id="playerCopyUrl" class="hidden">Zkopírovat adresu streamu</button>
+        </div>
       </div>
     </div>
 
@@ -174,6 +177,9 @@
     <div class="channel-art">
       <img class="channel-logo" alt="" loading="lazy">
       <span class="fav-dot"></span>
+      <span class="insecure-badge hidden" title="Nezabezpečený zdroj (http)">
+        <svg viewBox="0 0 24 24" width="11" height="11"><path fill="currentColor" d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm3 8H9V6a3 3 0 0 1 6 0z"/></svg>
+      </span>
     </div>
     <div class="channel-name"></div>
     <div class="channel-group"></div>
