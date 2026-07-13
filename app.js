@@ -27,10 +27,31 @@ function saveJSON(key, value) {
 
 const channelById = Object.fromEntries(CHANNELS.map(c => [c.id, c]));
 
-// A channel is at risk of being blocked by the browser's mixed-content policy
-// when this app is served over https but the stream itself is plain http.
+// ==========================================================================
+// Stream proxy config
+//
+// Streamy jde (kvůli http:// zdrojům a vlastním User-Agent hlavičkám) volat
+// jen přes proxy Worker, ne přímo z prohlížeče. Adresu Workeru vyplň po
+// nasazení na Cloudflare, např.:
+//   const PROXY_BASE = "https://tv-proxy.tvuj-ucet.workers.dev";
+// Necháš-li to prázdné (""), appka zkusí kanály volat přímo (funguje jen
+// pro https kanály bez vlastního User-Agentu).
+// ==========================================================================
+const PROXY_BASE = "";
+
 function isMixedContentRisk(url) {
   return location.protocol === "https:" && /^http:\/\//i.test(url);
+}
+
+// Vrátí finální adresu, kterou má přehrávač načíst — buď přímo, nebo
+// přes proxy Worker (pokud je nastavený PROXY_BASE a kanál to potřebuje).
+function resolvePlaybackUrl(channel) {
+  const needsProxy = !!PROXY_BASE && (isMixedContentRisk(channel.url) || !!channel.userAgent);
+  if (!needsProxy) return channel.url;
+  const p = new URL(PROXY_BASE.replace(/\/$/, "") + "/proxy");
+  p.searchParams.set("url", channel.url);
+  if (channel.userAgent) p.searchParams.set("ua", channel.userAgent);
+  return p.toString();
 }
 
 // ==========================================================================
@@ -127,9 +148,6 @@ function buildChannelCard(channel) {
   node.querySelector(".channel-group").textContent = groupLabel(channel.group);
   const favDot = node.querySelector(".fav-dot");
   if (state.favorites.includes(channel.id)) favDot.classList.add("on");
-  if (isMixedContentRisk(channel.url)) {
-    node.querySelector(".insecure-badge").classList.remove("hidden");
-  }
   node.addEventListener("click", () => openPlayer(channel.id));
   return node;
 }
@@ -377,19 +395,15 @@ function loadStream(channel) {
   playerError.classList.add("hidden");
   el("playerCopyUrl").classList.add("hidden");
 
-  const url = channel.url;
+  const url = resolvePlaybackUrl(channel);
 
-  // Browsers block http:// streams on an https:// page (mixed content) —
-  // this fails silently at the network layer, so we catch it up front
-  // instead of showing a generic "couldn't load" message.
-  if (isMixedContentRisk(url)) {
+  if (!PROXY_BASE && isMixedContentRisk(channel.url)) {
     showPlayerError(
-      "Tento kanál používá nezabezpečené (http) spojení, které prohlížeč na zabezpečené (https) stránce blokuje. Zkopíruj si adresu streamu a přehraj ji např. ve VLC, nebo appku hostuj přes http.",
-      { offerCopy: true, url, offerRetry: false }
+      "Tento kanál používá nezabezpečené (http) spojení. Appku máš teď puštěnou přes https, takže ho prohlížeč blokuje. Řešení: nastav v app.js adresu proxy Workeru (PROXY_BASE), nebo si adresu zkopíruj a přehraj ji např. ve VLC.",
+      { offerCopy: true, url: channel.url, offerRetry: false }
     );
     return;
   }
-
   playerLoading.classList.remove("hidden");
   const useNativeHls = videoEl.canPlayType("application/vnd.apple.mpegurl");
 
@@ -398,7 +412,10 @@ function loadStream(channel) {
     videoEl.play().catch(() => {});
   };
   const onError = () => {
-    showPlayerError("Kanál se nepodařilo načíst. Zdroj může být dočasně nedostupný.", { offerCopy: true, url });
+    showPlayerError("Kanál se nepodařilo načíst. Zdroj může být dočasně nedostupný nebo offline.", {
+      offerCopy: true,
+      url: channel.url,
+    });
   };
 
   if (useNativeHls) {
